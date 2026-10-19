@@ -23,9 +23,6 @@ listing:
 
 [I study how people's thoughts, emotions, and actions shape (and are shaped by) sociostructural conditions, using a multimethod approach, including advanced quantitative techniques.]{.lede}
 
-[About me](about.qmd){.btn .btn-primary}
-[CV](cv.pdf){.btn .btn-outline-primary}
-
 ::: {.chips}
 [R]{} [Stata]{} [Mplus]{} [Causal inference]{} [SEM / CFA]{} [Panel data]{}
 :::
