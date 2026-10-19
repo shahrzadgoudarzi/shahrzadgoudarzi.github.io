@@ -1,0 +1,17 @@
+{
+  "hash": "fa22f840f6034952d17f333fe2e9c852",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Fuel Efficiency and Vehicle Weight\"\ndescription: \"Linear regression with interaction effects and a publication-style figure in R.\"\ndate: 2026-10-01\nimage: thumbnail.png\ncategories: [R, Regression, ggplot2]\n---\n\n::: {.callout-note .summary appearance=\"simple\" icon=false}\n## At a glance\n::: {.summary-grid}\nQuestion\n:   How does vehicle weight relate to fuel efficiency, and does it differ by transmission?\n\nData\n:   `mtcars` · 32 cars, 1974 *Motor Trend*\n\nMethods\n:   OLS with a weight × transmission interaction\n\nFinding\n:   Heavier cars get fewer MPG, and the penalty is steeper for manual transmissions.\n:::\n:::\n\n## Setup\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(ggplot2)\nlibrary(broom)\nlibrary(knitr)\n\ndf <- transform(mtcars, transmission = factor(am, labels = c(\"Automatic\", \"Manual\")))\n```\n:::\n\n\n## Model\n\n\n::: {.cell}\n\n```{.r .cell-code}\nfit <- lm(mpg ~ wt * transmission, data = df)\n\ntidy(fit, conf.int = TRUE) |>\n  kable(digits = 2, caption = \"OLS estimates (outcome: miles per gallon)\")\n```\n\n::: {.cell-output-display}\n\n\nTable: OLS estimates (outcome: miles per gallon)\n\n|term                  | estimate| std.error| statistic| p.value| conf.low| conf.high|\n|:---------------------|--------:|---------:|---------:|-------:|--------:|---------:|\n|(Intercept)           |    31.42|      3.02|     10.40|       0|    25.23|     37.60|\n|wt                    |    -3.79|      0.79|     -4.82|       0|    -5.40|     -2.18|\n|transmissionManual    |    14.88|      4.26|      3.49|       0|     6.14|     23.61|\n|wt:transmissionManual |    -5.30|      1.44|     -3.67|       0|    -8.26|     -2.34|\n\n\n:::\n:::\n\n\n## Visualization\n\n\n::: {.cell}\n\n```{.r .cell-code}\nggplot(df, aes(wt, mpg, colour = transmission, fill = transmission)) +\n  geom_point(size = 2.5, alpha = 0.8) +\n  geom_smooth(method = \"lm\", alpha = 0.15) +\n  labs(x = \"Weight (1,000 lbs)\", y = \"Miles per gallon\", colour = NULL, fill = NULL) +\n  theme_minimal(base_size = 13) +\n  theme(legend.position = \"top\")\n```\n\n::: {.cell-output-display}\n![Predicted MPG by weight and transmission type (95% CI).](index_files/figure-html/fig-mpg-1.png){#fig-mpg width=672}\n:::\n:::\n\n\n## Takeaways\n\n::: {.takeaways}\n- Each additional 1,000 lbs is associated with a drop in MPG for both groups, with a larger slope for manual cars.\n- Write 2–3 bullets here on what the result means and its limitations.\n:::\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

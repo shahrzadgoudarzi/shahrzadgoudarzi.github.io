@@ -1,0 +1,33 @@
+/*-- scss:defaults --*/
+// Fonts
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+$font-family-sans-serif: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+$font-family-monospace: "JetBrains Mono", ui-monospace, Menlo, monospace;
+$headings-font-family: "Fraunces", Georgia, serif;
+$headings-font-weight: 600;
+$font-size-root: 17px;
+$line-height-base: 1.65;
+
+// Palette — change $primary to re-colour the whole site
+$primary:   #1f5f5b;   // deep teal
+$accent:    #c8693c;   // warm terracotta for highlights
+$body-bg:   #fbfaf7;   // warm off-white
+$body-color:#22262a;
+$gray-600:  #6b7177;
+$link-color: $primary;
+$border-radius: .6rem;
+
+// Navbar & footer
+$navbar-bg: $body-bg;
+$navbar-fg: $body-color;
+$navbar-hl: $primary;
+$footer-bg: $body-bg;
+
+// Code
+$code-bg: #f1efe9;
+$code-color: #8a3b1b;
+$code-block-bg: #f4f2ec;
+$code-block-border-color: #e6e2d8;
+
+/*-- scss:rules --*/
+// Shared rules live in styles.css so light and dark use the same ones.

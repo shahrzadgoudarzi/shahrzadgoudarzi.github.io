@@ -1,0 +1,15 @@
+{
+  "hash": "b8cf3f7c7e4b1e10580bd7cf34c1a780",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Wages, Education and Experience\"\ndescription: \"Mincer-style wage regression with margins plots in Stata.\"\ndate: 2026-09-15\nimage: thumbnail.png\nexecute:\n  eval: false   # delete these two lines once Stata/Mplus run on your computer\ncategories: [Stata, Regression, Margins]\nengine: knitr\n---\n\n::: {.callout-note .summary appearance=\"simple\" icon=false}\n## At a glance\n::: {.summary-grid}\nQuestion\n:   How do returns to education differ by union membership?\n\nData\n:   `nlsw88` · NLSW 1988 extract, 2,246 women\n\nMethods\n:   OLS on log wages with an education × union interaction; predictive margins\n\nFinding\n:   One sentence on the main result.\n:::\n:::\n\n\n\n## Data and model\n\nEach Stata chunk runs in a fresh session, so `collectcode=TRUE` carries the\ndata and estimates forward to later chunks.\n\n\n::: {.cell collectcode='true'}\n\n```{.stata .cell-code}\nsysuse nlsw88, clear\ngen lnwage = ln(wage)\nregress lnwage c.grade##i.union c.ttl_exp##c.ttl_exp i.race, vce(robust)\n```\n:::\n\n\n## Visualization\n\nStata graphs are exported to PNG, then shown with ordinary Markdown.\n\n\n::: {.cell}\n\n```{.stata .cell-code}\nmargins union, at(grade = (8(2)18))\nmarginsplot, recast(line) recastci(rarea) ciopts(color(%30)) ///\n    title(\"\") ytitle(\"Predicted log wage\") xtitle(\"Years of schooling\") ///\n    legend(order(3 \"Non-union\" 4 \"Union\") pos(6) rows(1)) scheme(s2color)\ngraph export \"margins.png\", replace width(1600)\n```\n:::\n\n\n![Predicted log wages by schooling and union status (95% CI).](margins.png){#fig-margins width=85%}\n\n## Takeaways\n\n::: {.takeaways}\n- Bullet 1: the main substantive result.\n- Bullet 2: robustness or limitations.\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

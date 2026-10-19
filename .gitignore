@@ -1,0 +1,17 @@
+/.quarto/
+/_site/
+*_files/
+.Rhistory
+.RData
+.Rproj.user/
+.DS_Store
+# Keep _freeze/ committed — it stores Stata/Mplus results for publishing.
+# Raw or confidential data should never be committed:
+data/raw/
+
+**/*.quarto_ipynb
+
+# Large original figures: keep on your computer, never upload
+*.tiff
+*.tif
+.Rhistory

@@ -1,0 +1,37 @@
+---
+pagetitle: "Shahrzad Goudarzi"
+page-layout: full
+toc: false
+title-block-style: none
+code-tools: false
+listing:
+  contents: projects
+  type: grid
+  grid-columns: 3
+  image-height: 200px
+  sort: "date desc"
+  categories: false
+  fields: [image, title, description, categories]
+  date-format: "MMM YYYY"
+---
+
+::: {.hero}
+::: {}
+[Behavioral and social science researcher]{.eyebrow}
+
+[Shahrzad Goudarzi, Ph.D.]{.hero-title role="heading" aria-level="1"}
+
+[I study how people's thoughts, emotions, and actions shape (and are shaped by) sociostructural conditions, using a multimethod approach, including advanced quantitative techniques.]{.lede}
+
+[About me](about.qmd){.btn .btn-primary}
+[CV](cv.pdf){.btn .btn-outline-primary}
+
+::: {.chips}
+[R]{} [Stata]{} [Mplus]{} [Causal inference]{} [SEM / CFA]{} [Panel data]{}
+:::
+:::
+
+:::
+
+## Selected projects {.unnumbered}
+

@@ -1,0 +1,28 @@
+/*-- scss:defaults --*/
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+$font-family-sans-serif: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+$font-family-monospace: "JetBrains Mono", ui-monospace, Menlo, monospace;
+$headings-font-family: "Fraunces", Georgia, serif;
+$headings-font-weight: 600;
+$font-size-root: 17px;
+$line-height-base: 1.65;
+
+$primary:   #6fc2b6;
+$accent:    #e89a6f;
+$body-bg:   #15191c;
+$body-color:#e4e2dc;
+$gray-600:  #9aa1a7;
+$link-color: $primary;
+$border-radius: .6rem;
+
+$navbar-bg: $body-bg;
+$navbar-fg: $body-color;
+$navbar-hl: $primary;
+$footer-bg: $body-bg;
+
+$code-bg: #22282c;
+$code-color: #f0b48f;
+$code-block-bg: #1d2226;
+$code-block-border-color: #2c3337;
+
+/*-- scss:rules --*/

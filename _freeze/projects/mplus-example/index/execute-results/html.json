@@ -1,0 +1,15 @@
+{
+  "hash": "584ff66dcd892adf630b5e8da12d4a84",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Confirmatory Factor Analysis of Mental Ability\"\ndescription: \"Three-factor CFA in Mplus, run and visualised from R with MplusAutomation.\"\ndate: 2026-08-20\nimage: thumbnail.png\nexecute:\n  eval: false   # delete these two lines once Stata/Mplus run on your computer\ncategories: [Mplus, SEM, CFA]\n---\n\n::: {.callout-note .summary appearance=\"simple\" icon=false}\n## At a glance\n::: {.summary-grid}\nQuestion\n:   Do nine ability tests measure three distinct factors?\n\nData\n:   Holzinger & Swineford (1939) · 301 students\n\nMethods\n:   Three-factor CFA, ML estimation in Mplus\n\nFinding\n:   One sentence on fit and loadings.\n:::\n:::\n\n## Setup\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(MplusAutomation)   # runs Mplus and reads its output\nlibrary(lavaan)            # only for the example data\nlibrary(dplyr)\nlibrary(ggplot2)\n\ndir.create(\"mplus\", showWarnings = FALSE)\nhs <- HolzingerSwineford1939[, paste0(\"x\", 1:9)]\n```\n:::\n\n\n## Mplus model\n\nThe `mplusObject()` holds the exact Mplus syntax, so readers see the model as\nthey would write it in an `.inp` file.\n\n\n::: {.cell}\n\n```{.r .cell-code}\ncfa <- mplusObject(\n  TITLE    = \"Three-factor CFA;\",\n  ANALYSIS = \"ESTIMATOR = ML;\",\n  MODEL    = \"\n    visual  BY x1 x2 x3;\n    textual BY x4 x5 x6;\n    speed   BY x7 x8 x9;\",\n  OUTPUT   = \"STDYX MODINDICES(10);\",\n  rdata    = hs\n)\n\n# Requires a licensed Mplus on the machine that renders this page.\nfit <- mplusModeler(cfa, modelout = \"mplus/cfa.inp\", run = 1L)\n```\n:::\n\n\n## Model fit\n\n\n::: {.cell}\n\n```{.r .cell-code}\nfit$results$summaries |>\n  select(ChiSqM_Value, ChiSqM_DF, CFI, TLI, RMSEA_Estimate, SRMR) |>\n  knitr::kable(digits = 3, caption = \"Global fit\")\n```\n:::\n\n\n## Visualization\n\n\n::: {.cell}\n\n```{.r .cell-code}\nfit$results$parameters$stdyx.standardized |>\n  filter(grepl(\"\\\\.BY$\", paramHeader)) |>\n  mutate(factor = sub(\"\\\\.BY$\", \"\", paramHeader),\n         lo = est - 1.96 * se, hi = est + 1.96 * se) |>\n  ggplot(aes(est, reorder(param, est), colour = factor)) +\n  geom_pointrange(aes(xmin = lo, xmax = hi)) +\n  facet_grid(factor ~ ., scales = \"free_y\", space = \"free_y\") +\n  labs(x = \"Standardized loading\", y = NULL) +\n  theme_minimal(base_size = 13) +\n  theme(legend.position = \"none\")\n```\n:::\n\n\n<!-- Placeholder figure: remove this line once the chunk above runs -->\n![Standardized factor loadings (STDYX) with 95% CI.](loadings.png)\n\n## Raw Mplus output\n\n<details><summary>Show full `.out` file</summary>\n\n\n::: {.cell}\n\n:::\n\n\n</details>\n\n## Takeaways\n\n::: {.takeaways}\n- Bullet 1: does the three-factor structure fit?\n- Bullet 2: notable loadings or modification indices.\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

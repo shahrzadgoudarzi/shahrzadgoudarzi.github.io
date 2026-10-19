@@ -1,0 +1,46 @@
+project:
+  type: website
+  output-dir: docs
+  resources:
+    - cv.pdf
+
+website:
+  title: "Research Portfolio"
+  site-url: https://shahrzadgoudarzi.github.io
+  repo-url: https://github.com/shahrzadgoudarzi/shahrzadgoudarzi.github.io
+  navbar:
+    background: light
+    left:
+      - href: index.qmd
+        text: Projects
+      - href: about.qmd
+        text: About
+    right:
+      - icon: linkedin                      
+        href: https://www.linkedin.com/in/shahrzad-goudarzi-900b2392
+
+
+  page-footer:
+    left: "© 2026 Shahrzad Goudarzi"
+    right: "Built with [Quarto](https://quarto.org)"
+
+format:
+  html:
+    theme:
+      light: [cosmo, theme-light.scss]
+      dark: [cosmo, theme-dark.scss]
+    css: styles.css
+    toc: true
+    code-fold: show        # readers can collapse/expand code
+    code-tools: true       # "</> Code" button to view full source
+    code-copy: true
+    highlight-style: a11y
+    fig-align: center
+
+execute:
+  # Render on YOUR machine (where Stata/Mplus are licensed), commit the
+  # _freeze/ folder, and GitHub only publishes the stored results.
+  freeze: auto
+  echo: true
+  warning: false
+  message: false

@@ -1,0 +1,142 @@
+[
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "I’m a social and behavioral science researcher. I have a PhD in social psychology from New York University. I use a multimethod approach to understand the interrelation between public attitudes and policy.\nTools: R · Stata · Mplus · SPSS\nMethods: regression & panel models · causal inference · SEM / CFA · latent class & growth models · survey data · qualitative coding"
+  },
+  {
+    "objectID": "projects/poverty-attributions/index.html",
+    "href": "projects/poverty-attributions/index.html",
+    "title": "Cross-National Study of Poverty Attributions and Economic Policies",
+    "section": "",
+    "text": "NoteAt a glance\n\n\n\n\n\nQuestion\n\nWhat do people think causes poverty, and how do these beliefs relate to welfare and labor policies?\n\nData\n\nSurvey responses fielded in 13 countries (N = 6,500 with representative samples) integrated with country-level labor and welfare policies\n\nMethods\n\nMulti-national survey study with three-level mixed-effects regression\n\nFindings\n\nReduced government spending predicts greater endorsement of individualist and fatalist attributions, and labor deregulation predicts greater endorsement of individualist attributions."
+  },
+  {
+    "objectID": "projects/poverty-attributions/index.html#background",
+    "href": "projects/poverty-attributions/index.html#background",
+    "title": "Cross-National Study of Poverty Attributions and Economic Policies",
+    "section": "Background",
+    "text": "Background\nDespite an abundance of economic wealth in the 21st century, poverty remains one of the challenges facing societies worldwide. Social scientists have long contended that the reasons people give for why poverty exists are related to their preferences for different policies. Little work, however, has looked at the relationship between actual policies and poverty beliefs. Our study examines three types of poverty attributions people give for why some people are poor: individualist (e.g., poor people are lazy), structural (e.g., the system is corrupt), and fatalist (e.g., poor people are unlucky). We study 13 countries, including commonly studied Western societies (e.g., the United States and the United Kingdom) and underrepresented societies (e.g., Egypt and Saudi Arabia)."
+  },
+  {
+    "objectID": "projects/poverty-attributions/index.html#attributions-across-countries",
+    "href": "projects/poverty-attributions/index.html#attributions-across-countries",
+    "title": "Cross-National Study of Poverty Attributions and Economic Policies",
+    "section": "Attributions across countries",
+    "text": "Attributions across countries\nBefore modeling, we compared mean endorsement of each attribution type by country. Countries are ordered from least to most market-oriented, using the average of their government size and labor regulation scores.\n\n\n\n\n\n\nFigure 1: Mean endorsement of structural, individualist and fatalist attributions by country (95% CI). Countries are ordered by the average of government size and labor regulation.\n\n\n\nThe R code below reshapes the survey data to long format (one row per respondent × attribution type), computes country means with 95% confidence intervals, and draws the plot.\n\n\nShow R code\n\nlibrary(tidyverse)\nlibrary(haven)\nlibrary(reshape2)\n\ndf1 &lt;- read_dta(\"Goudarzi&Napier_2025_full.dta\")\n\n# Long format: one row per respondent x attribution type\ndf_att_poverty &lt;- subset(df1, select = c(\"country\", \"respondent_serial\",\n                                         \"ind4\", \"struct4\", \"fate3\",\n                                         \"gov_size\", \"labor_reg\"))\ndf_att_poverty_long &lt;- melt(df_att_poverty,\n                            id = c(\"country\", \"respondent_serial\",\n                                   \"gov_size\", \"labor_reg\"))\ncolnames(df_att_poverty_long)[colnames(df_att_poverty_long) == \"variable\"] &lt;- \"att_type\"\ndf_att_poverty_filtered &lt;- df_att_poverty_long %&gt;% filter(!is.na(value))\n\n# Country means with 95% confidence intervals\nsummary_data &lt;- df_att_poverty_filtered %&gt;%\n  group_by(country, att_type) %&gt;%\n  summarise(\n    mean_value = mean(value),\n    ci_lower   = mean_value - qt(0.975, n()) * sd(value) / sqrt(n()),\n    ci_upper   = mean_value + qt(0.975, n()) * sd(value) / sqrt(n()),\n    .groups = \"drop\"\n  )\n\n# Order countries by the average of government size and labor regulation\norder &lt;- c(\"Sweden\", \"Brazil\", \"Japan\", \"South Korea\", \"Turkey\", \"UK\", \"Indonesia\",\n           \"Hungary\", \"Russia\", \"US\", \"India\", \"Egypt\", \"Saudi Arabia\")\ncountry_mapping &lt;- c(\"Brazil\", \"Egypt\", \"Hungary\", \"India\", \"Indonesia\", \"Japan\",\n                     \"Russia\", \"Saudi Arabia\", \"South Korea\", \"Sweden\", \"Turkey\",\n                     \"UK\", \"US\")\nsummary_data$country  &lt;- factor(country_mapping[summary_data$country], levels = order)\nsummary_data$att_type &lt;- factor(summary_data$att_type,\n                                levels = c(\"struct4\", \"ind4\", \"fate3\"))\n\n# Plot\nfigure1 &lt;- ggplot(summary_data,\n                  aes(x = country, y = mean_value, color = att_type,\n                      group = interaction(country, att_type))) +\n  geom_point(position = position_dodge(width = 0.3)) +\n  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.1,\n                position = position_dodge(width = 0.3)) +\n  labs(x = \"\", y = \"Mean Value\", color = \"Attribution Type\") +\n  scale_color_manual(values = c(\"red\", \"blue\", \"#4CAF50\"),\n                     labels = c(\"Structural\", \"Individualist\", \"Fatalist\")) +\n  scale_y_continuous(limits = c(1, 5)) +\n  theme_minimal() +\n  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),\n        panel.grid.major.x = element_blank())\n\nggsave(\"figure1_lineplot.png\", plot = figure1,\n       width = 10, height = 7, units = \"in\", dpi = 300)"
+  },
+  {
+    "objectID": "projects/poverty-attributions/index.html#data-and-model",
+    "href": "projects/poverty-attributions/index.html#data-and-model",
+    "title": "Cross-National Study of Poverty Attributions and Economic Policies",
+    "section": "Data and model",
+    "text": "Data and model\nWe fit a three-level mixed-effects regression, with attribution types (level 1) nested in respondents (level 2), nested in countries (level 3). The outcome is attribution endorsement. The model was estimated in two steps.\nStep 1: Individual-level predictors\n\nAttribution type: dummy codes for individualist and fatalist (structural = reference)\nSubjective socioeconomic status (SES), centered within country\nAttribution type × SES\n\nStep 2: Economic policies\n\nSmall government\nLabor deregulation\nAttribution type × small government\nAttribution type × labor deregulation\n\nControls (both steps)\n\nIndividual level: gender, age, college education, income\nCountry level: SES (centered between countries), Gini, DI, HDI"
+  },
+  {
+    "objectID": "projects/poverty-attributions/index.html#results",
+    "href": "projects/poverty-attributions/index.html#results",
+    "title": "Cross-National Study of Poverty Attributions and Economic Policies",
+    "section": "Results",
+    "text": "Results\nThe figures below show predicted endorsement of each attribution type in countries 1 SD below and 1 SD above the mean on each policy measure, from the Step 2 model.\n\n\n\n\n\n\n\n\n\nFigure 2: Small government\n\n\n\n\n\n\n\n\n\n\n\nFigure 3: Labor deregulation\n\n\n\n\n\n\nPredicted attribution endorsement at low (−1 SD) and high (+1 SD) levels of small government and labor deregulation (95% CI)."
+  },
+  {
+    "objectID": "projects/poverty-attributions/index.html#takeaways",
+    "href": "projects/poverty-attributions/index.html#takeaways",
+    "title": "Cross-National Study of Poverty Attributions and Economic Policies",
+    "section": "Takeaways",
+    "text": "Takeaways\n\n\nStructural attributions are the most strongly endorsed in most of the 13 countries, but the gap between attribution types varies widely across countries and is related to small government and labor laws.\nIn countries with smaller governments, people more strongly endorse individualist and fatalist explanations for poverty.\nIn countries with more deregulated labor markets, people more strongly endorse individualist explanations.\n\n\nFull code: goudarzi-napier-2026-plots.R\nPaper: Goudarzi, S., & Napier, J. L. (2026). The association between neoliberal policies and attributions of poverty in 13 countries. Social Psychological and Personality Science, 17(4), 480–491.\nRead the paper"
+  },
+  {
+    "objectID": "projects/neolib/index.html",
+    "href": "projects/neolib/index.html",
+    "title": "Dynamic Analysis of Economic Policies and Attitudes toward Income Inequality",
+    "section": "",
+    "text": "NoteAt a glance\n\n\n\n\n\nQuestion\n\nIs there a dynamic relationship between beliefs about income inequality at the individual level and economic policies at the societal level?\n\nData\n\nEconomic policies derived from official statistics, legal data, and expert surveys\n\n\nAttitudes toward income inequality were measured in the World Values Survey\n\nAnalysis\n\nDynamic Structural Equation Modeling to analyze longitudinal relationships between neoliberal structures and individuals’ preferences for income (in)equality in more than 160 countries over 5 waves.\n\nFindings\n\nMarket-oriented economic policies predicted higher preference for income inequality a few years later."
+  },
+  {
+    "objectID": "projects/neolib/index.html#background",
+    "href": "projects/neolib/index.html#background",
+    "title": "Dynamic Analysis of Economic Policies and Attitudes toward Income Inequality",
+    "section": "Background",
+    "text": "Background\nNeoliberalism refers to free market policies of reduced welfare spending, privatization, and deregulation of labor markets. One reason advocates argue for enacting these policies is that they reward hard work, rather than free riding. In this project, we examined how variations in market-oriented policies relate to beliefs about income inequality in more than 160 countries over more than two decades."
+  },
+  {
+    "objectID": "projects/neolib/index.html#data",
+    "href": "projects/neolib/index.html#data",
+    "title": "Dynamic Analysis of Economic Policies and Attitudes toward Income Inequality",
+    "section": "Data",
+    "text": "Data\nFree Market Economic policies data: Composite of items from Fraser Institute’s Economic Freedom Index (EFI), such as government consumption, transfers and subsidies, top marginal income and payroll tax, hiring and firing regulation, centralized collective bargaining.\nAttitudes towards income inequality survey measure from WVS with answers ranging from “Incomes should be made more equal” (1) to “There should be greater incentives for individual effort” (10)\nAnalysis was conducted on five waves of data, from WVS Waves 3 (1995–1998) through 7 (2017–2019)."
+  },
+  {
+    "objectID": "projects/neolib/index.html#models",
+    "href": "projects/neolib/index.html#models",
+    "title": "Dynamic Analysis of Economic Policies and Attitudes toward Income Inequality",
+    "section": "Models",
+    "text": "Models\nTo merge the EFI and WVS data sets, we averaged our index of policies across the years containing each WVS wave.\nModels have two outcome variables: neoliberal economic policies and income inequality attitudes.\nIn Model 1, policies and attitudes for country i at time t are predicted from policies and attitudes at the preceding measurement occasion (t – 1), while adjusting for economic development (HDI) and Gini at time t.\nModel 2 included an indicator of individualism as a time-invariant covariate.\n\n\n\n\n\n\nModel 1: Within-countries model.\n\n\n\n\n\n\n\nModel 1: Between-countries model.\n\n\n\n\n\n\n\nShow Mplus code: Model 1\n\n\n\nDATA:   FILE = DSEM_all.dat;\n\n\nVARIABLE: NAMES ARE COUNTRY WAVE E035 fact4 \nHDI gini Ind1_ti Ind1_tv;\n                USEVARIABLES E035 fact4 gini HDI;\n                 Missing are all (9999);\n                 Lagged = E035(1) fact4(1);\n                 cluster=COUNTRY;\n                 TINTERVAL=WAVE(1);\n\nANALYSIS:   TYPE = TWOLEVEL RANDOM;\n                  estimator=bayes;\n                FBITER = (20000);\n                thin = (10);\n          PROCESSORS = 4; \n\nMODEL:\n\n%WITHIN%\nPHI1 | E035 on E035&1;\n! E035 is regressed on Lag-1 E035,phi_1i\n!the slope is latent\nPHI2 | fact4 ON fact4&1;\n! neoliberalism is regressed on Lag-1 neoliberalism,phi_2i\n!the slope is latent\nPHI3 | fact4 ON E035&1;\n!neoliberalism is regressed on Lag-1 E035, phi_3i\n!the slope is latent;\nPHI4 | E035 ON fact4&1;\n!E035 is regress on Lag-1 neoliberalism, phi_4i \n!the slope is latent;\nBETA1 | E035 on gini;! slope of gini on E035, Beta_1i\nBETA2 | E035 on HDI;! slope of HDI on E035, Beta_2i\nLogV1|E035;\n!the Within-Level residual variance of E035 is latent, !sigma^2_1i;\nLogV2|fact4;\n!the Within-Level residual variance of neoliberalism is latent, !sigma^2_2i;\neta by E035@1 fact4@1; ! new factor, positive covariance between residuals \nlogpsi | eta; ! random covariance between residuals\n\n\n%BETWEEN%\n[E035]; !mean intercept of E035, gamma_00;\n[fact4]; !mean intercept of neoliberalism, gamma_10;\n[PHI1]; !mean of E035 autoregressive slope,gamma_20;\n[PHI2]; !mean of neoliberalism autoregressive slope,gamma_30;\n[PHI3]; !mean of neoliberalism on E035&1 slope,gamma_40;\n[PHI4]; !mean of E035 on Neoliberalism&1 slope,gamma_50;\n[BETA1]; ! mean of E035 on gini slope,gamma_60; \n[BETA2]; !mean of E035 on HDI slope, gamma_70;\n[Logv1]; !mean of log residuals E035, omega_0;\n[Logv2]; !mean of log residuals neoliberalism, omega_1;\nE035; !E035 intercept variance, tau_00;\nfact4; !neoliberalism intercept variance, tau_11;\nPHI1; !E035 autoregressive slope variance, tau_22;\nPHI2; !neoliberalism autoregressive slope variance, tau_33;\nPHI3; !neoliberalism on E035&1 slope variance, tau_44;\nPHI4; !E035 on neoliberalism&1 slope variance,tau_55;\nBETA1; !E035 on gini slope variance,tau_88\nBETA2; !E035 on gini slope variance,tau_99\nLogv1; !variance of log residual E035, tau_66;\nLogv2; !Variance of log residuals neolib, tau_77;\n[gini];\n[hdi];\ngini;\nhdi;\n\nOUTPUT:\nstandardized; ! standardized results, refer to STDYX \ntech8; ! tech8 provides output for PSR value\n\nSAVEDATA:\nSAVE = FSCORES(50 10);!save individual country estimates\nfile is datamodel1.dat;\n\nPLOT:\nTYPE = PLOT2; ! creates trace plots and autocorrelation plots\n\n\n\n\n\nShow Mplus code: Model 2\n\n\n\nDATA:   FILE IS DSEM_all.dat;\n  \nVARIABLE:  NAMES ARE COUNTRY WAVE E035 fact4 \n HDI gini Ind1_ti Ind1_tv;\n                USEVARIABLES E035 fact4 Ind1_ti;\n                Missing are all (9999);\n                Lagged = E035(1) fact4(1);\n                BETWEEN= Ind1_ti;\n                cluster=COUNTRY;\n                TINTERVAL=WAVE(1);\nDEFINE: CENTER Ind1_ti (GRANDMEAN);\nANALYSIS:   TYPE = TWOLEVEL RANDOM;\n              estimator=bayes;\n            fbiter=(10000);\n            thin= (10);\n              \nMODEL:\n%WITHIN%\n  PHI1 | E035 on E035&1;\n  ! E035 is regressed on Lag-1 E035,phi_1i\n  !the slope is latent vertical pipe meand paths are person-specific and latent variables in the between-level model\n  PHI2 | fact4 ON fact4&1;\n  ! neoliberalism is regressed on Lag-1 neoliberalism,phi_2i\n  !the slope is latent\n  PHI3 |fact4 ON E035&1;\n  !neoliberalism is regressed on Lag-1 E035, phi_3i\n  !the slope is latent;\n  PHI4 |E035 ON fact4&1;\n  !E035 is regress on Lag-1 neoliberalism, phi_4i\n  !the slope is latent;\n  LogV1|E035;\n  !the Within-Level residual variance of E035 is latent, !sigma^2_1i;\n  LogV2|fact4;\n  !the Within-Level residual variance of neoliberalism is latent, !sigma^2_2i;\n  eta by E035@1 fact4@1; ! new factor, positive covariance between residuals\n  logpsi | eta; ! random covariance between residuals\n\n %BETWEEN%\n  [E035]; !mean intercept of E035, gamma_00;\n  [fact4]; !mean intercept of neoliberalism, gamma_10;\n  [PHI1]; !mean of E035 autoregressive slope,gamma_20;\n  [PHI2]; !mean of neoliberalism autoregressive slope,gamma_30;\n  [PHI3]; !mean of neoliberalism on E035&1 slope,gamma_40;\n  [PHI4]; !mean of E035 on Neoliberalism&1 slope,gamma_50;\n  [LogV1];\n  !log of the mean of the E035 residual variance, omega_0;\n  [LogV2];\n  !log of the mean of the neoliberalism residual variance, omega_1;\n\n\n  E035; !E035 intercept variance, tau_00;\n  fact4; !neoliberalism intercept variance, tau_11;\n  PHI1; !E035 autoregressive slope variance, tau_22;\n  PHI2; !neoliberalism autoregressive slope variance, tau_33;\n  PHI3; !neoliberalism on E035&1 slope variance, tau_44;\n  PHI4; !E035 on neoliberalism&1 slope,tau_55;\n  LogV1; !between-person variance of E035 residual variance, tau_66;\n  LogV2; !between-person variance of neoliberalism residual variance, tau_77;\n  \n  E035 on Ind1_ti; \n  !The country-specific intercept of E035 is predicted by individualism, gamma_01;\n  fact4 on Ind1_ti;\n    !The country-specific intercept of E035 is predicted by individualism, gamma_11;\n  PHI1 on Ind1_ti;\n  !The country-specific autoregressive slope of E035 is predicted by individualism, gamma_21;\n  PHI2 on Ind1_ti;\n  !Thecountry-specific autoregressive slope of neoliberalism is predicted by individualism, gamma_31;\n  PHI3 on Ind1_ti;\n  !The country-specific slope of E035 is predicted by individualism, gamma_41;\n  PHI4 on Ind1_ti;\n  !The country-specific slope of neoliberalism is predicted by individualism, gamma_51;\n  LOGV1 on Ind1_ti;\n  !The country-specific residual variance of E035 is predicted by individualism, omega_2;\n  LOGV2 on Ind1_ti;\n  !The country-specific residual variance of neolliberalism is predicted by individualism, omega_3;\n\nOUTPUT:\nstandardized; ! standardized results, refer to STDYX \ntech8; ! tech8 provides output for PSR value\n\n\nPLOT:\nTYPE = PLOT2; ! creates trace plots and autocorrelation plots"
+  },
+  {
+    "objectID": "projects/neolib/index.html#results",
+    "href": "projects/neolib/index.html#results",
+    "title": "Dynamic Analysis of Economic Policies and Attitudes toward Income Inequality",
+    "section": "Results",
+    "text": "Results\nAs shown in Table 1, Lag-1 neoliberalism predicted higher preference for income inequality at time t (φ4i), whereas Lag-1 preference for income inequality did not predict neoliberalism at time t (φ3i) when we adjusted for the time-varying effects of HDI and Gini.\n\n\n\nEstimates and 95% Credible Intervals (CrIs) for Model 1.\n\n\n\n\n\nEstimates and 95% Credible Intervals (CrIs) for Model 2.\n\n\n\n\n\nStandardized coefficients for autoregressive and cross-lagged effects in the primary model."
+  },
+  {
+    "objectID": "projects/neolib/index.html#takeaways",
+    "href": "projects/neolib/index.html#takeaways",
+    "title": "Dynamic Analysis of Economic Policies and Attitudes toward Income Inequality",
+    "section": "Takeaways",
+    "text": "Takeaways\n\n\nData from more than 160 countries collected in the past 2 decades suggest that neoliberal systems have been instrumental in promoting preferences for income inequality\nMore generally, this work provides evidence that people’s beliefs about inequality are influenced by socioeconomic institutions and policies.\n\n\nFull code: Model 1 · Model 2\nPaper: Goudarzi, S., Badaan, V., & Knowles, E. D. (2022). Neoliberalism and the ideological construction of equity beliefs. Perspectives on Psychological Science, 17(5), 1–21.\nRead the paper"
+  },
+  {
+    "objectID": "projects/gender-stereotypes/index.html",
+    "href": "projects/gender-stereotypes/index.html",
+    "title": "Gender Stereotypes and Sexist Attitudes around the World",
+    "section": "",
+    "text": "NoteAt a glance\n\n\n\n\n\nQuestion\n\nWhat is the relationship between stereotypes about the unique qualities that women and men possess and sexist attitudes?\n\nMethods\n\nTwo multi-national survey studies with piecewise (spline) mixed-effects regression analysis\n\nFinding\n\nOverall, women are viewed as more communal and men as more agentic. These stereotypes were related to sexism: People who viewed women as more communal than men scored lower on several measures of sexism, while those who viewed men as more communal than women scored generally higher on measures of sexism (e.g., belief that men are superior, paternalism)."
+  },
+  {
+    "objectID": "projects/gender-stereotypes/index.html#background",
+    "href": "projects/gender-stereotypes/index.html#background",
+    "title": "Gender Stereotypes and Sexist Attitudes around the World",
+    "section": "Background",
+    "text": "Background\nBeing communal (e.g., warm, moral, and kind) and being agentic (independent, competitive, assertive) are two sets of qualities that people use to describe themselves and others. Women are often seen as communal (and not agentic), while men are viewed as agentic (and not communal). These beliefs are called communal and agentic gender stereotypes, respectively. Theories in psychology of gender predict that stereotypes and sexist attitudes are linked. Nonetheless, empirical evidence supporting this prediction is lacking. Using two multi-national datasets, we studied how endorsement of communal and agentic stereotypes promote different forms of egalitarian and sexist beliefs."
+  },
+  {
+    "objectID": "projects/gender-stereotypes/index.html#study-1",
+    "href": "projects/gender-stereotypes/index.html#study-1",
+    "title": "Gender Stereotypes and Sexist Attitudes around the World",
+    "section": "Study 1",
+    "text": "Study 1\n\nData\n\nSurvey data: from 14 countries, N = 7,001, with representative samples\n\n\n\nMeasures\n\nStereotypes: communal traits (e.g., compassionate, helpful) and agentic traits (e.g., ambitious, decisive), were rated as either “more true of women than men,” “equally true of men and women,” or “more true of men than women”. The ratings were averaged to get a composite score from -1 (more true of women than men) to 1 (more true of men than women) for communal and agentic traits.\nSexist Attitudes Outcomes: scales measuring men’s supremacy, denial of sexism, reverse sexism, traditional domestic roles\nControls: gender, subjective socioeconomic status, age\n\n\n\nModel\nWe fit a mixed-effects regression predicting each outcome from communal and agentic trait ratings, with random intercept for countries. Trait ratings (i.e., communal and agentic stereotypes) are entered as splines with a knot at 0, so the slope can differ depending on whether women vs. men are seen as having more of the trait.\n\n\nShow Stata code\n\n* Splines with a knot at \"equal\" (0)\nmkspline s1_communal 0 s2_communal = communal\nmkspline s1_agentic  0 s2_agentic  = agentic\n\n* Example outcome: men's supremacy\nmixed oldf_atw s1_communal s2_communal s1_agentic s2_agentic ///\n      female c_ses10 c_age || country:, reml dfmethod(kroger)\n\n* Predicted values at women more (-1), equal (0), men more (1)\nmargins, at(s1_communal=-1 s2_communal=0) ///\n         at(s1_communal=0  s2_communal=0) ///\n         at(s1_communal=0  s2_communal=1) saving(s1_margins_ms_com, replace)\n\nmargins, at(s1_agentic=-1 s2_agentic=0) ///\n         at(s1_agentic=0  s2_agentic=0) ///\n         at(s1_agentic=0  s2_agentic=1) saving(s1_margins_ms_agent, replace)\nThe same model is fit for each of the outcomes.\n\n\n\nResults\n\n\n\n\n\n\nFigure 1: Communal stereotypes. Predicted attitudes (black line, 95% CI) by whether women or men are seen as more communal, over raw responses.\n\n\n\n\n\n\n\n\n\nFigure 2: Agentic stereotypes. Predicted attitudes (black line, 95% CI) by whether women or men are seen as more agentic, over raw responses.\n\n\n\nThe figures are drawn in R from the margins saved in Stata:\n\n\nShow R code\n\nlibrary(tidyverse)\nlibrary(haven)\nlibrary(patchwork)\n\ndf &lt;- read_dta(\"data1.dta\")\nx_labels &lt;- c(\"-1\" = \"-1\\nWomen\", \"0\" = \"0\\nEqual\", \"1\" = \"1\\nMen\")\n\n# Jitter raw points to avoid overplotting\ndf$communal_jitter &lt;- pmin(pmax(df$communal + runif(nrow(df), -0.4, 0.4), -1), 1)\n\n# Predicted margins saved by Stata\ndf1 &lt;- read_dta(\"s1_margins_ms_com.dta\") %&gt;% mutate(communal = c(-1, 0, 1))\n\nms_com &lt;- ggplot(df1, aes(x = communal, y = `_margin`)) +\n  geom_jitter(data = df, aes(x = communal_jitter, y = oldf_atw),\n              alpha = 0.2, size = .8, color = \"steelblue\") +\n  geom_ribbon(aes(ymin = `_ci_lb`, ymax = `_ci_ub`), fill = \"grey80\", alpha = 0.5) +\n  geom_line(color = \"black\", linewidth = 1.1) +\n  scale_x_continuous(breaks = c(-1, 0, 1), labels = x_labels) +\n  labs(x = NULL, y = \"Men's Supremacy\") +\n  theme_minimal()\n\n# ...repeated for each outcome, then combined with patchwork:\ncombined_plot &lt;- ((ms_com | ds_com) / (rs_com | tgr_com) / (sj_com | plot_spacer())) +\n  plot_annotation(tag_levels = \"A\")"
+  },
+  {
+    "objectID": "projects/gender-stereotypes/index.html#study-2",
+    "href": "projects/gender-stereotypes/index.html#study-2",
+    "title": "Gender Stereotypes and Sexist Attitudes around the World",
+    "section": "Study 2",
+    "text": "Study 2\n\nData\n\nsurvey data from 62 countries, N = 33,313\n\n\n\nMeasures\n\nStereotypes: communal traits and agentic traits, were rated from 1 “more true of women than men” to 7 “more true of men than women”. These ratings were averaged to get a composite score from 1 (more true of women than men) to 7 (more true of men than women).\nSexist attitudes: scales measuring hostile views of women, benevolent sexism (e.g., paternalism), denial of sexism.\nControls: gender, subjective socioeconomic status, age\n\n\n\nResults\n\n\n\n\n\n\nFigure 3: Predicted hostile sexism, benevolent sexism, and denial of sexism by communal (left, blue) and agentic (right, red) stereotypes (95% CI).\n\n\n\n\n\n\n\n\n\nFigure 4: Interaction of communal and agentic stereotypes. Lines show predicted values when women (blue), neither (black), or men (red) are seen as more communal, across levels of agentic stereotypes. HS = hostile sexism, BS = benevolent sexism, DS = denial of sexism."
+  },
+  {
+    "objectID": "projects/gender-stereotypes/index.html#takeaways",
+    "href": "projects/gender-stereotypes/index.html#takeaways",
+    "title": "Gender Stereotypes and Sexist Attitudes around the World",
+    "section": "Takeaways",
+    "text": "Takeaways\n\n\nSexist attitudes were generally lowest among people who saw women as more communal.\nSeeing men as more communal (and women as more agentic) was linked to stronger sexist beliefs in Study 1.\nIn Study 2, sexism was generally the highest among those who viewed men and women as equally communal and agentic. There was also an interaction effect such that overall assigning communality to women and agency to men was related to lower sexism.\nThe findings are surprising because communal stereotypes are theorized to promote sexism. By challenging previous theories, findings provide a nuanced understanding of lay beliefs about gender.\n\n\nFull code: Study 1 (Stata) · Study 2 (Stata) · Figures (R)\nPaper: Goudarzi, S., & Napier, J. L. Are communal stereotypes necessarily sexist?\nRead the preprint"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Research Portfolio",
+    "section": "",
+    "text": "Behavioral and social science researcher\nShahrzad Goudarzi, Ph.D.\nI study how people’s thoughts, emotions, and actions shape (and are shaped by) sociostructural conditions, using a multimethod approach, including advanced quantitative techniques.\nAbout me CV\n\nR Stata Mplus Causal inference SEM / CFA Panel data"
+  },
+  {
+    "objectID": "index.html#selected-projects",
+    "href": "index.html#selected-projects",
+    "title": "Research Portfolio",
+    "section": "Selected projects",
+    "text": "Selected projects"
+  }
+]

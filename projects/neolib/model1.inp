@@ -1,0 +1,79 @@
+DATA:	FILE = DSEM_all.dat;
+
+
+VARIABLE: NAMES ARE COUNTRY WAVE E035 fact4 
+HDI gini Ind1_ti Ind1_tv;
+                USEVARIABLES E035 fact4 gini HDI;
+                 Missing are all (9999);
+                 Lagged = E035(1) fact4(1);
+                 cluster=COUNTRY;
+                 TINTERVAL=WAVE(1);
+
+ANALYSIS:   TYPE = TWOLEVEL RANDOM;
+        	      estimator=bayes;
+                FBITER = (20000);
+                thin = (10);
+	      PROCESSORS = 4; 
+
+MODEL:
+
+%WITHIN%
+PHI1 | E035 on E035&1;
+! E035 is regressed on Lag-1 E035,phi_1i
+!the slope is latent
+PHI2 | fact4 ON fact4&1;
+! neoliberalism is regressed on Lag-1 neoliberalism,phi_2i
+!the slope is latent
+PHI3 | fact4 ON E035&1;
+!neoliberalism is regressed on Lag-1 E035, phi_3i
+!the slope is latent;
+PHI4 | E035 ON fact4&1;
+!E035 is regress on Lag-1 neoliberalism, phi_4i 
+!the slope is latent;
+BETA1 | E035 on gini;! slope of gini on E035, Beta_1i
+BETA2 | E035 on HDI;! slope of HDI on E035, Beta_2i
+LogV1|E035;
+!the Within-Level residual variance of E035 is latent, !sigma^2_1i;
+LogV2|fact4;
+!the Within-Level residual variance of neoliberalism is latent, !sigma^2_2i;
+eta by E035@1 fact4@1; ! new factor, positive covariance between residuals 
+logpsi | eta; ! random covariance between residuals
+
+
+%BETWEEN%
+[E035]; !mean intercept of E035, gamma_00;
+[fact4]; !mean intercept of neoliberalism, gamma_10;
+[PHI1]; !mean of E035 autoregressive slope,gamma_20;
+[PHI2]; !mean of neoliberalism autoregressive slope,gamma_30;
+[PHI3]; !mean of neoliberalism on E035&1 slope,gamma_40;
+[PHI4]; !mean of E035 on Neoliberalism&1 slope,gamma_50;
+[BETA1]; ! mean of E035 on gini slope,gamma_60; 
+[BETA2]; !mean of E035 on HDI slope, gamma_70;
+[Logv1]; !mean of log residuals E035, omega_0;
+[Logv2]; !mean of log residuals neoliberalism, omega_1;
+E035; !E035 intercept variance, tau_00;
+fact4; !neoliberalism intercept variance, tau_11;
+PHI1; !E035 autoregressive slope variance, tau_22;
+PHI2; !neoliberalism autoregressive slope variance, tau_33;
+PHI3; !neoliberalism on E035&1 slope variance, tau_44;
+PHI4; !E035 on neoliberalism&1 slope variance,tau_55;
+BETA1; !E035 on gini slope variance,tau_88
+BETA2; !E035 on gini slope variance,tau_99
+Logv1; !variance of log residual E035, tau_66;
+Logv2; !Variance of log residuals neolib, tau_77;
+[gini];
+[hdi];
+gini;
+hdi;
+
+OUTPUT:
+standardized; ! standardized results, refer to STDYX 
+tech8; ! tech8 provides output for PSR value
+
+SAVEDATA:
+SAVE = FSCORES(50 10);!save individual country estimates
+file is datamodel1.dat;
+
+PLOT:
+TYPE = PLOT2; ! creates trace plots and autocorrelation plots
+

@@ -1,0 +1,84 @@
+DATA:	FILE IS DSEM_all.dat;
+  
+VARIABLE:  NAMES ARE COUNTRY WAVE E035 fact4 
+ HDI gini Ind1_ti Ind1_tv;
+                USEVARIABLES E035 fact4 Ind1_ti;
+                Missing are all (9999);
+                Lagged = E035(1) fact4(1);
+                BETWEEN= Ind1_ti;
+                cluster=COUNTRY;
+                TINTERVAL=WAVE(1);
+DEFINE: CENTER Ind1_ti (GRANDMEAN);
+ANALYSIS:   TYPE = TWOLEVEL RANDOM;
+        	  estimator=bayes;
+            fbiter=(10000);
+            thin= (10);
+              
+MODEL:
+%WITHIN%
+  PHI1 | E035 on E035&1;
+  ! E035 is regressed on Lag-1 E035,phi_1i
+  !the slope is latent vertical pipe meand paths are person-specific and latent variables in the between-level model
+  PHI2 | fact4 ON fact4&1;
+  ! neoliberalism is regressed on Lag-1 neoliberalism,phi_2i
+  !the slope is latent
+  PHI3 |fact4 ON E035&1;
+  !neoliberalism is regressed on Lag-1 E035, phi_3i
+  !the slope is latent;
+  PHI4 |E035 ON fact4&1;
+  !E035 is regress on Lag-1 neoliberalism, phi_4i
+  !the slope is latent;
+  LogV1|E035;
+  !the Within-Level residual variance of E035 is latent, !sigma^2_1i;
+  LogV2|fact4;
+  !the Within-Level residual variance of neoliberalism is latent, !sigma^2_2i;
+  eta by E035@1 fact4@1; ! new factor, positive covariance between residuals
+  logpsi | eta; ! random covariance between residuals
+
+ %BETWEEN%
+  [E035]; !mean intercept of E035, gamma_00;
+  [fact4]; !mean intercept of neoliberalism, gamma_10;
+  [PHI1]; !mean of E035 autoregressive slope,gamma_20;
+  [PHI2]; !mean of neoliberalism autoregressive slope,gamma_30;
+  [PHI3]; !mean of neoliberalism on E035&1 slope,gamma_40;
+  [PHI4]; !mean of E035 on Neoliberalism&1 slope,gamma_50;
+  [LogV1];
+  !log of the mean of the E035 residual variance, omega_0;
+  [LogV2];
+  !log of the mean of the neoliberalism residual variance, omega_1;
+
+
+  E035; !E035 intercept variance, tau_00;
+  fact4; !neoliberalism intercept variance, tau_11;
+  PHI1; !E035 autoregressive slope variance, tau_22;
+  PHI2; !neoliberalism autoregressive slope variance, tau_33;
+  PHI3; !neoliberalism on E035&1 slope variance, tau_44;
+  PHI4; !E035 on neoliberalism&1 slope,tau_55;
+  LogV1; !between-person variance of E035 residual variance, tau_66;
+  LogV2; !between-person variance of neoliberalism residual variance, tau_77;
+  
+  E035 on Ind1_ti; 
+  !The country-specific intercept of E035 is predicted by individualism, gamma_01;
+  fact4 on Ind1_ti;
+    !The country-specific intercept of E035 is predicted by individualism, gamma_11;
+  PHI1 on Ind1_ti;
+  !The country-specific autoregressive slope of E035 is predicted by individualism, gamma_21;
+  PHI2 on Ind1_ti;
+  !Thecountry-specific autoregressive slope of neoliberalism is predicted by individualism, gamma_31;
+  PHI3 on Ind1_ti;
+  !The country-specific slope of E035 is predicted by individualism, gamma_41;
+  PHI4 on Ind1_ti;
+  !The country-specific slope of neoliberalism is predicted by individualism, gamma_51;
+  LOGV1 on Ind1_ti;
+  !The country-specific residual variance of E035 is predicted by individualism, omega_2;
+  LOGV2 on Ind1_ti;
+  !The country-specific residual variance of neolliberalism is predicted by individualism, omega_3;
+
+OUTPUT:
+standardized; ! standardized results, refer to STDYX 
+tech8; ! tech8 provides output for PSR value
+
+
+PLOT:
+TYPE = PLOT2; ! creates trace plots and autocorrelation plots
+

@@ -1,0 +1,22 @@
+---
+title: "About"
+toc: false
+about:
+  template: trestles
+  image: profile.jpg
+  image-shape: round
+  image-width: 14em
+  links:
+    - icon: envelope
+      text: Email
+      href: mailto:sg3499@nyu.edu
+    - icon: file-earmark-pdf
+      text: CV
+      href: cv.pdf
+---
+
+I'm a social and behavioral science researcher. I have a PhD in social psychology from New York University. I use a multimethod approach to understand the interrelation between public attitudes and policy. 
+
+**Tools:** R · Stata · Mplus · SPSS
+
+**Methods:** regression & panel models · causal inference · SEM / CFA · latent class & growth models · survey data · qualitative coding 
